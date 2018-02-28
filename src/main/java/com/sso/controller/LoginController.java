@@ -1,13 +1,10 @@
 package com.sso.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -25,6 +22,12 @@ import java.util.UUID;
 @Controller
 public class LoginController {
     Map<String,String> cache=new HashMap<String, String>();
+
+    /**
+     * 跳转到登录页面，如果已登录，则生成ticket，回跳来源地址
+     * @param request
+     * @return
+     */
     @RequestMapping("/toLogin")
     public String toLogin(HttpServletRequest request){
         String querystr=request.getParameter("redirect");
@@ -47,6 +50,12 @@ public class LoginController {
         return "login";
     }
 
+    /**
+     * 1、验证密码 2、生成ticket 3、构建会跳地址携带ticket
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping("/authPrinciple")
     public String authPrinciple(HttpServletRequest request, HttpServletResponse response){
         String username=request.getParameter("username");
@@ -64,6 +73,12 @@ public class LoginController {
         buffer.append("ticket="+ticket);
         return "redirect:"+buffer.toString();
     }
+
+    /**
+     * 验证ticket，返回用户信息
+     * @param ticket
+     * @return
+     */
     @RequestMapping(value = "/tickets/{ticket}", method = RequestMethod.POST)
     public final ResponseEntity<String> createServiceTicket(@PathVariable("ticket") final String ticket) {
         try {

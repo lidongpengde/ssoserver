@@ -98,9 +98,9 @@ http {
 
 
 
-hosts文件修改
+hosts文件修改，改成自己的IP
 
 10.144.48.232  www.client.com
 10.144.48.232  www.sso.com
 
-改成自己的IP
+
