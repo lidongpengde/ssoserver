@@ -17,7 +17,7 @@ import java.util.UUID;
 
 
 /**
- * Created by lidongpeng on 2018/2/26.
+ * Created by li on 2018/2/26.
  */
 @Controller
 public class LoginController {
@@ -31,17 +31,18 @@ public class LoginController {
     @RequestMapping("/toLogin")
     public String toLogin(HttpServletRequest request){
         String querystr=request.getParameter("redirect");
-        String gloabal=null;
+        String cookieValue=null;
         Cookie cookie=getCookieByName(request, "globalCookie");
         if (cookie!=null){
-             gloabal=cookie.getValue();
-             if (!StringUtils.isEmpty(gloabal)){
+            cookieValue=cookie.getValue();
+            String userName=(String)request.getSession().getAttribute(cookieValue);
+             if (!StringUtils.isEmpty(userName)){
                  String redirect= (String) request.getSession().getAttribute("redirect");
                  StringBuffer buffer=new StringBuffer(redirect);
                  buffer.append("?");
                  //生成ticket
                  String ticket=UUID.randomUUID().toString().substring(0,6);
-                 cache.put(ticket,gloabal);
+                 cache.put(ticket,userName);
                  buffer.append("ticket="+ticket);
                  return "redirect:"+buffer.toString();
              }
@@ -67,8 +68,11 @@ public class LoginController {
         buffer.append("?");
         //生成ticket
         String ticket=UUID.randomUUID().toString().substring(0,6);
-        Cookie cookie=new Cookie("globalCookie",username);
+        String cookieValue=UUID.randomUUID().toString().substring(0,6);
+        Cookie cookie=new Cookie("globalCookie",cookieValue);
         response.addCookie(cookie);
+        //保存服务端会话
+        request.getSession().setAttribute(cookieValue,username);
         cache.put(ticket,username);
         buffer.append("ticket="+ticket);
         return "redirect:"+buffer.toString();
@@ -84,6 +88,8 @@ public class LoginController {
         try {
             String result= cache.get(ticket);
             if (result!=null && result!=""){
+                //ticket验证成功后清除
+                cache.remove(ticket);
                 return new ResponseEntity<String>(result, HttpStatus.OK);
             }
         } catch (final Exception e) {
